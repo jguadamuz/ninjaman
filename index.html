@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NinjaMan</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        div {
+            line-height: 0;
+        }
+        .wall {
+            height: 40px;
+            width: 40px;
+            background-color: blue;
+            display: inline-block;
+        }
+
+        .blank {
+            height: 40px;
+            width: 40px;
+            background-color: black;
+            display: inline-block;
+        }
+
+        .sushi {
+            height: 40px;
+            width: 40px;
+            background-image: url(img/sushi.png);
+            background-size: contain;
+            background-color: black;
+            display: inline-block;
+        }
+
+        .onigiri {
+            height: 40px;
+            width: 40px;
+            background-image: url(img/onigiri.png);
+            background-size: contain;
+            background-color: black;
+            display: inline-block;
+        }
+
+        #ninjaman {
+            position: absolute;
+            height: 40px;
+            width: 40px;
+            background-image: url(img/ninja.gif);
+            background-size: contain;
+            background-color: black;
+            display: inline-block;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="game"></div>
+    <div id="ninjaman"></div>
+    <div id="score"></div>
+    <script>
+
+        const BLANK = 0, SUSHI = 1, WALL = 2, ONIGIRI= 3;
+        const WORLD_SIZE = 20
+
+/*
+        var world = [
+            [WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL],
+            [WALL, WALL, SUSHI, SUSHI, SUSHI, BLANK, SUSHI, SUSHI, SUSHI, WALL],
+            [WALL, SUSHI, SUSHI, SUSHI, SUSHI, BLANK, SUSHI, WALL, ONIGIRI, WALL],
+            [WALL, SUSHI, WALL, WALL, SUSHI, BLANK, SUSHI, WALL, SUSHI, WALL],
+            [WALL, SUSHI, WALL, SUSHI, SUSHI, BLANK, SUSHI, WALL, SUSHI, WALL],
+            [WALL, SUSHI, WALL, SUSHI, WALL, WALL, SUSHI, WALL, ONIGIRI, WALL],
+            [WALL, SUSHI, WALL, WALL, SUSHI, BLANK, SUSHI, WALL, ONIGIRI, WALL],
+            [WALL, SUSHI, WALL, WALL, SUSHI, BLANK, SUSHI, WALL, ONIGIRI, WALL],
+            [WALL, WALL, WALL, WALL, SUSHI, BLANK, SUSHI, ONIGIRI, ONIGIRI, WALL],
+            [WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL, WALL],
+        ];
+*/
+        var worldDict = {
+            0: 'blank',
+            1: 'sushi',
+            2: 'wall',
+            3: 'onigiri'
+        };
+
+        var world = []
+
+        /*
+          Randomly creates the world with the walls, food, and empty spots to walk
+        */
+        function createWorld() {
+            // Check how many different resources we have so far, i.e. sushi, onigiri, walls, etc
+            var N_RESOURCES = Object.keys(worldDict).length;
+            for (var y = 0; y < WORLD_SIZE; y++){
+                world.push([]);
+                for (var x = 0; x < WORLD_SIZE; x++) {
+                    world[y].push(Math.floor(Math.random(N_RESOURCES)*N_RESOURCES));
+                }
+            }
+        }
+        createWorld();
+
+        var ninjaman = {xpos: 5, ypos: 4, score: 0};
+
+        function drawWorld() {
+            var game = document.querySelector("#game");
+
+            var output = "";
+            for (var row = 0; row < world.length; row++) {
+                output += '<div class="row">';
+                for (var column = 0; column < world[row].length; column++) {
+                    output += '<div class=' + worldDict[world[row][column]] + '></div>';
+                }
+                output += '</div>';
+            }
+            game.innerHTML = output;
+        }
+
+        function drawNinjaman() {
+            var ninjamanDiv = document.querySelector("#ninjaman");
+            ninjamanDiv.style.left = ninjaman.xpos * 40 + "px";
+            ninjamanDiv.style.top = ninjaman.ypos * 40 + "px";
+
+        }
+
+        function isValidPos(xpos, ypos) {
+            var isWall, isOutOfWorld;
+            // Verifies if the position is a wall
+            isWall = worldDict[world[ypos][xpos]] === worldDict[WALL];
+            // Verifies if the movement would go beyond the world's limits
+            isOutOfWorld = xpos >= world.length || ypos >= world.length || xpos < 0 || ypos < 0;
+            return isWall || isOutOfWorld;
+        }
+
+        /* 
+          Empties the place where ninjaman has been on
+          and updates the overall score in the game so far
+        */
+        function eatFood(xpos, ypos) {
+            // console.log("xpos" +  xpos + "ypos" + ypos)
+
+            if (worldDict[world[ypos][xpos]] === worldDict[SUSHI]) {
+                updateScore(worldDict[SUSHI]);
+            } else if (worldDict[world[ypos][xpos]] === worldDict[ONIGIRI]) {
+                updateScore(worldDict[ONIGIRI]);
+            }
+
+            world[ypos][xpos] = BLANK;
+
+        }
+
+        /*
+          Updates the score  
+        */
+        function updateScore(food) {
+            if (food === worldDict[SUSHI]) {
+                ninjaman.score += 10;
+            } else if (food === worldDict[ONIGIRI]) {
+                ninjaman.score += 5;
+            }
+        }
+
+        /*
+          Displays on the screen the score that has been earned so far
+        */
+        function drawScore() {
+            var score = document.querySelector("#score");
+            score.innerHTML = "<h1>Score: " + ninjaman.score + "</h1>";
+        }
+
+        function updateWorld() {
+            /* It could happen that ninjaman is located where some
+             food was randomly located when the world was created,
+             so we need to account for those points
+            */
+            eatFood(ninjaman.xpos, ninjaman.ypos);
+            drawWorld();
+            drawNinjaman();
+            drawScore();
+        }
+
+        updateWorld();
+
+        /*
+        Updates the position of ninjaman only when it's not a wall  
+        */
+        document.onkeydown = function(e) {
+            // console.log(e);
+            // console.log(ninjaman);
+			if (e.key === "ArrowRight" &&  !isValidPos(ninjaman.xpos + 1, ninjaman.ypos)){
+				ninjaman.xpos++;
+			}
+			if (e.key === "ArrowLeft" && !isValidPos(ninjaman.xpos - 1, ninjaman.ypos)) {
+				ninjaman.xpos--;
+			}
+			if (e.key === "ArrowUp" && !isValidPos(ninjaman.xpos, ninjaman.ypos - 1)) {
+				ninjaman.ypos--;
+			}
+			if (e.key === "ArrowDown" && !isValidPos(ninjaman.xpos, ninjaman.ypos + 1)) {
+				ninjaman.ypos++;
+			}
+
+            updateWorld();
+        }
+
+    </script>
+</body>
+
+</html>
