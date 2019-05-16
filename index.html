@@ -97,7 +97,7 @@
             for (var y = 0; y < WORLD_SIZE; y++){
                 world.push([]);
                 for (var x = 0; x < WORLD_SIZE; x++) {
-                    world[y].push(Math.floor(Math.random(N_RESOURCES)*N_RESOURCES));
+                    world[y].push(Math.floor(Math.random()*N_RESOURCES));
                 }
             }
         }
@@ -126,7 +126,7 @@
 
         }
 
-        function isValidPos(xpos, ypos) {
+        function isInvalidPos(xpos, ypos) {
             var isWall, isOutOfWorld;
             // Verifies if the position is a wall
             isWall = worldDict[world[ypos][xpos]] === worldDict[WALL];
@@ -190,16 +190,16 @@
         document.onkeydown = function(e) {
             // console.log(e);
             // console.log(ninjaman);
-			if (e.key === "ArrowRight" &&  !isValidPos(ninjaman.xpos + 1, ninjaman.ypos)){
+			if (e.key === "ArrowRight" &&  !isInvalidPos(ninjaman.xpos + 1, ninjaman.ypos)){
 				ninjaman.xpos++;
 			}
-			if (e.key === "ArrowLeft" && !isValidPos(ninjaman.xpos - 1, ninjaman.ypos)) {
+			if (e.key === "ArrowLeft" && !isInvalidPos(ninjaman.xpos - 1, ninjaman.ypos)) {
 				ninjaman.xpos--;
 			}
-			if (e.key === "ArrowUp" && !isValidPos(ninjaman.xpos, ninjaman.ypos - 1)) {
+			if (e.key === "ArrowUp" && !isInvalidPos(ninjaman.xpos, ninjaman.ypos - 1)) {
 				ninjaman.ypos--;
 			}
-			if (e.key === "ArrowDown" && !isValidPos(ninjaman.xpos, ninjaman.ypos + 1)) {
+			if (e.key === "ArrowDown" && !isInvalidPos(ninjaman.xpos, ninjaman.ypos + 1)) {
 				ninjaman.ypos++;
 			}
 
